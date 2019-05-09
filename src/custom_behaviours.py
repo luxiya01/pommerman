@@ -1,22 +1,6 @@
 import py_trees
 
 
-class BombNearByCheck(py_trees.behaviour.Behaviour):
-    def __init__(self, name):
-        super(BombNearByCheck, self).__init__(name)
-        self.blackboard = py_trees.blackboard.Blackboard()
-
-    def setup(self):
-        pass
-
-    def initialise(self):
-        pass
-
-    def update(self):
-        # print(self.blackboard)
-        return py_trees.common.Status.RUNNING
-
-
 class MessageTeammate(py_trees.behaviour.Behaviour):
     def __init__(self, name):
         super(MessageTeammate, self).__init__(name)
@@ -30,55 +14,7 @@ class MessageTeammate(py_trees.behaviour.Behaviour):
 
     def update(self):
         # print(self.blackboard)
-        return py_trees.common.Status.RUNNING
-
-
-class SafePlaceCheck(py_trees.behaviour.Behaviour):
-    def __init__(self, name):
-        super(SafePlaceCheck, self).__init__(name)
-        self.blackboard = py_trees.blackboard.Blackboard()
-
-    def setup(self):
-        pass
-
-    def initialise(self):
-        pass
-
-    def update(self):
-        # print(self.blackboard)
-        return py_trees.common.Status.RUNNING
-
-
-class WaitForExplotion(py_trees.behaviour.Behaviour):
-    def __init__(self, name):
-        super(WaitForExplotion, self).__init__(name)
-        self.blackboard = py_trees.blackboard.Blackboard()
-
-    def setup(self):
-        pass
-
-    def initialise(self):
-        pass
-
-    def update(self):
-        # print(self.blackboard)
-        return py_trees.common.Status.RUNNING
-
-
-class FindAndGoToSafePlace(py_trees.behaviour.Behaviour):
-    def __init__(self, name):
-        super(FindAndGoToSafePlace, self).__init__(name)
-        self.blackboard = py_trees.blackboard.Blackboard()
-
-    def setup(self):
-        pass
-
-    def initialise(self):
-        pass
-
-    def update(self):
-        # print(self.blackboard)
-        return py_trees.common.Status.RUNNING
+        return py_trees.common.Status.SUCCESS
 
 
 class PowerUpCheck(py_trees.behaviour.Behaviour):

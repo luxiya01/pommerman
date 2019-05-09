@@ -2,6 +2,9 @@ import py_trees
 from pommerman.agents import BaseAgent
 from pommerman import constants, utility
 from custom_behaviours import *
+from bomb_nearby_check import BombNearByCheck
+from safety_place_check import SafePlaceCheck
+from find_and_go_to_safe_place import FindAndGoToSafePlace
 import numpy as np
 
 
@@ -12,10 +15,21 @@ class PyTreeAgent(BaseAgent):
         self.tree = self._create_tree()
         self.tree.setup_with_descendants()
 
+        self.tmp_counter = 0
+
     def act(self, obs, action_space):
         self.blackboard.obs = obs
+        if self.tmp_counter < 1:
+            self.tmp_counter += 1
+            return 5
+            #return np.random.randint(0, 6)
+
+        self.blackboard.action = 0
         self.tree.tick_once()
-        return np.random.randint(0, 6)
+
+        print(self.blackboard.action)
+
+        return self.blackboard.action
 
     def _create_tree(self):
         # Define nodes
@@ -32,7 +46,7 @@ class PyTreeAgent(BaseAgent):
             name='Check and find safe place root')
         safe_place_root = py_trees.composites.Sequence(name='Safe place root')
         safe_place_check = SafePlaceCheck(name='safe place?')
-        wait_for_explosion = WaitForExplotion(name='Wait for explosion')
+        # wait_for_explosion = WaitForExplotion(name='Wait for explosion')
         find_and_go_to_safe_place = FindAndGoToSafePlace(
             name='Find and go to safe place')
 
@@ -54,7 +68,8 @@ class PyTreeAgent(BaseAgent):
 
         # Build tree
         ## Bomb side
-        safe_place_root.add_children([safe_place_check, wait_for_explosion])
+        safe_place_root.add_children(
+            [safe_place_check])  #, wait_for_explosion])
         check_and_find_safe_place_root.add_children(
             [safe_place_root, find_and_go_to_safe_place])
         bomb_nearby_root.add_children([
