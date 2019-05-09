@@ -1,6 +1,7 @@
 '''An example to show how to set up an pommerman game programmatically'''
 import pommerman
 from pommerman import agents
+from pytree_agent import PyTreeAgent
 
 
 def main():
@@ -14,10 +15,14 @@ def main():
     # Create a set of agents (exactly four)
     agent_list = [
         #agents.PlayerAgent(agent_control="arrows"),
-        agents.SimpleAgent(),
-        agents.RandomAgent(),
-        agents.SimpleAgent(),
-        agents.RandomAgent(),
+        #agents.SimpleAgent(),
+        #agents.RandomAgent(),
+        #agents.SimpleAgent(),
+        #        agents.RandomAgent(),
+        PyTreeAgent(),
+        PyTreeAgent(),
+        PyTreeAgent(),
+        PyTreeAgent()
         # agents.DockerAgent("pommerman/simple-agent", port=12345),
     ]
     # Make the "Free-For-All" environment using the agent list
