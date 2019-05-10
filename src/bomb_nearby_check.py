@@ -17,4 +17,4 @@ class BombNearByCheck(py_trees.behaviour.Behaviour):
     def update(self):
         position = self.blackboard.obs['position']
         bomb_blast_strength = self.blackboard.obs['bomb_blast_strength']
-        return utils.check_euclidean_distance(position, bomb_blast_strength)
+        return utils.check_visibility(position, bomb_blast_strength)

@@ -5,6 +5,7 @@ from custom_behaviours import *
 from bomb_nearby_check import BombNearByCheck
 from safety_place_check import SafePlaceCheck
 from find_and_go_to_safe_place import FindAndGoToSafePlace
+from explore_behavious import *
 import numpy as np
 
 
@@ -27,9 +28,9 @@ class PyTreeAgent(BaseAgent):
         self.blackboard.action = 0
         self.tree.tick_once()
 
-        print(self.blackboard.action)
+        #print("blackboard action: "+ str(self.blackboard.action)+ "type: "+ str(type(self.blackboard.action)))
 
-        return self.blackboard.action
+        return int(self.blackboard.action)
 
     def _create_tree(self):
         # Define nodes

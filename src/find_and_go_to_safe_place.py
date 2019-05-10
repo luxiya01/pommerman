@@ -8,11 +8,6 @@ class FindAndGoToSafePlace(py_trees.behaviour.Behaviour):
         super(FindAndGoToSafePlace, self).__init__(name)
         self.blackboard = py_trees.blackboard.Blackboard()
         self.enemy_nearby_threshold = 2
-        LEFT = 3
-        RIGHT = 4
-        DOWN = 2
-        UP = 1
-        self.index_to_action = {0: UP, 1: DOWN, 2: LEFT, 3: RIGHT}
 
     def setup(self):
         pass
@@ -21,20 +16,23 @@ class FindAndGoToSafePlace(py_trees.behaviour.Behaviour):
         pass
 
     def update(self):
-        pos_x, pos_y = self.blackboard.obs['position']
-        indices = np.clip(
-            np.array([(pos_x - 1, pos_y), (pos_x + 1, pos_y), (pos_x,
-                                                               pos_y - 1),
-                      (pos_x, pos_y + 1)]), 0, 10)
-        scores = np.zeros((indices.shape[0], 1))
 
-        for i, board_index in enumerate(indices):
-            scores[i] = self._calculate_score(board_index)
+        position = self.blackboard.obs['position']
 
-        print(scores)
+        #Find scores of surrounding cells
+        scores,positions = self.find_scores(position)
 
-        optimum_index = scores.argmax()
-        self.blackboard.action = self.index_to_action[optimum_index]
+        #print(scores)
+
+        optimum_index = np.argwhere(scores == np.amax(scores))
+        if np.shape(optimum_index)[0]>1:
+            for neighbor in optimum_index:
+                n_scores, _ = self.find_scores(positions[neighbor[0]])
+                max_n_scores = np.amax(n_scores)
+                scores[neighbor[0]]+= max_n_scores
+
+        best_index = np.argmax(scores)
+        self.blackboard.action = best_index
         return py_trees.common.Status.SUCCESS
 
     def _calculate_score(self, board_index):
@@ -45,6 +43,7 @@ class FindAndGoToSafePlace(py_trees.behaviour.Behaviour):
                    self.blackboard.obs['enemies'][1].value)
 
         # Is wall or bomb or enemy
+        #print("Board index: " + str(board[i, j]))
         if (board[i, j] > 0
                 and board[i, j] < 5) or (board[i, j] == enemies[0]
                                          or board[i, j] == enemies[1]):
@@ -55,7 +54,8 @@ class FindAndGoToSafePlace(py_trees.behaviour.Behaviour):
         # Is in range of bomb
         bomb_range = utils.check_bomb_range(board_index, bomb_blast_strength)
         if bomb_range != utils.SUCCESS:
-            total_score -= bomb_range * 10
+
+            total_score -= 1/(1+bomb_range) * 100
 
         # Is power up
         if board[i, j] > 5 and board[i, j] < 9:
@@ -70,3 +70,18 @@ class FindAndGoToSafePlace(py_trees.behaviour.Behaviour):
                     total_score += -2
 
         return total_score
+
+    def find_scores(self, position):
+
+        pos_x, pos_y = position
+        positions = np.clip(
+            np.array([(pos_x,pos_y),(pos_x - 1, pos_y), (pos_x + 1, pos_y), (pos_x,
+                                                               pos_y - 1),
+                      (pos_x, pos_y + 1)]), 0, 10)
+
+        scores = np.zeros((positions.shape[0], 1))
+
+        for i, board_index in enumerate(positions):
+
+            scores[i] = self._calculate_score(board_index)
+        return scores,positions

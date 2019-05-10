@@ -24,7 +24,7 @@ class SafePlaceCheck(py_trees.behaviour.Behaviour):
         if utils.check_bomb_range(position,
                                   bomb_blast_strength) == utils.SUCCESS:
             self.blackboard.action = 0
-            print('I am safe!')
+            #print('I am safe!')
             return py_trees.common.Status.SUCCESS
 
         # Not in safe place
