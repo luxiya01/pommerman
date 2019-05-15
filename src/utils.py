@@ -76,13 +76,14 @@ def calculate_score(board_index, enemy_nearby_threshold=2):
     return total_score
 
 
-def get_neighbour_indices(index, x_dim, y_dim):
-    curr_x, curr_y = index
+def get_neighbour_indices(index):
+    pos_x, pos_y = index
     neighbours = []
-    for x in range(min(0, curr_x - 1), max(x_dim, curr_x + 1)):
-        for y in range(min(0, curr_y - 1), max(y_dim, curr_y + 1)):
-            neighbours.append((x, y))
-    print('neighbours: ', neighbours)
+    neighbours_array = np.clip(np.array([(pos_x, pos_y), (pos_x - 1, pos_y), (pos_x + 1, pos_y),
+                  (pos_x, pos_y - 1), (pos_x, pos_y + 1)]), 0, 10)
+    for neighbour in neighbours_array:
+        neighbours.append(tuple(neighbour))
+    #print('neighbours: ', neighbours)
     return neighbours
 
 
@@ -90,10 +91,10 @@ def get_astar_path_and_cost(start_pos, goal_pos, came_from, costs):
     index = goal_pos
     total_cost = 0
     path = []
-    print('costs: ', costs)
+   # print('costs: ', costs)
     while index != start_pos:
         path.append(index)
-        print('index: ', index)
+       # print('index: ', index)
         total_cost += costs[index]
         index = came_from[index]
     return {'path': path, 'cost': total_cost}
@@ -128,25 +129,27 @@ def astar(grid, start_pos, goal_pos):
     cost_so_far = {}
     came_from[start_pos] = None
     cost_so_far[start_pos] = 0
+    visited = set()
 
-    print('frontier: ', frontier)
-    while not frontier:
+
+    while frontier:
         sorted_frontier = sorted(frontier.items(), key=lambda kv: kv[1])
         current_pos = sorted_frontier[0][0]
         del frontier[current_pos]
-
+        visited.add(current_pos)
         if current_pos == goal_pos:
             break
 
-        for neighbour in get_neighbour_indices(current_pos, x_dim, y_dim):
-            neighbour_score = calculate_score(neighbour)
+        for neighbour in get_neighbour_indices(current_pos):
+            neighbour_score = -calculate_score(neighbour,1)
             new_cost = cost_so_far[current_pos] + neighbour_score
-            print('neighbour is ', neighbour, ' score = ', neighbour_score)
+            #print('neighbour is ', neighbour, ' score = ', neighbour_score)
             if (neighbour not in cost_so_far) or (new_cost <
                                                   cost_so_far[neighbour]):
-                print('Update cost so far!')
+                #print('Update cost so far!')
                 cost_so_far[neighbour] = new_cost
                 priority = new_cost + calculate_manhattan(neighbour, goal_pos)
-                frontier[neighbour] = priority
+                if not neighbour in visited :
+                    frontier[neighbour] = priority
                 came_from[neighbour] = current_pos
     return get_astar_path_and_cost(start_pos, goal_pos, came_from, cost_so_far)
