@@ -16,14 +16,16 @@ def main():
     agent_list = [
         #agents.PlayerAgent(agent_control="arrows"),
         agents.SimpleAgent(),
+        PyTreeAgent(),
         agents.SimpleAgent(),
-        agents.SimpleAgent(),
+
         #        agents.RandomAgent(),
         PyTreeAgent()
         # agents.DockerAgent("pommerman/simple-agent", port=12345),
     ]
     # Make the "Free-For-All" environment using the agent list
     env = pommerman.make('PommeRadioCompetition-v2', agent_list)
+    env.seed(400)
 
     # Run the episodes just like OpenAI Gym
     for i_episode in range(1):
