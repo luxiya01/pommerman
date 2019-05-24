@@ -20,8 +20,9 @@ class BombNearByCheck(py_trees.behaviour.Behaviour):
         bomb_blast_strength = self.blackboard.obs['bomb_blast_strength']
         flame_board = (board == 4)
         nonzero_indices = np.nonzero(flame_board)
-        bomb_blast_strength [nonzero_indices]=1
+        bomb_blast_strength[nonzero_indices] = 1
         return utils.check_visibility(position, bomb_blast_strength)
+
 
 class KickCheck(py_trees.behaviour.Behaviour):
     def __init__(self, name):
@@ -40,14 +41,19 @@ class KickCheck(py_trees.behaviour.Behaviour):
         canKick = self.blackboard.obs['can_kick']
         if not canKick:
             return py_trees.common.Status.FAILURE
+        elif self.blackboard.recently_kicked_bomb < 4:
+            self.blackboard.recently_kicked_bomb += 1
+            return py_trees.common.Status.FAILURE
 
         neighbours = utils.get_neighbour_indices(position)
 
-        for neibour in neighbours:
-            if board[neibour[0],neibour[1]] == 3:
+        # Check if immediate neighbor is a bomb
+        for neighbor in neighbours:
+            if board[neighbor[0], neighbor[1]] == 3:
                 return py_trees.common.Status.SUCCESS
 
         return py_trees.common.Status.FAILURE
+
 
 class Kick(py_trees.behaviour.Behaviour):
     def __init__(self, name):
@@ -66,11 +72,31 @@ class Kick(py_trees.behaviour.Behaviour):
         bomb_positions = []
         neighbours = utils.get_neighbour_indices(position)
 
-        for neibour in neighbours:
-            if board[neibour[0], neibour[1]] == 3:
-                bomb_positions.append(neibour)
-
+        for neighbor in neighbours:
+            if board[neighbor[0], neighbor[1]] == 3:
+                potential_action = utils.next_action(position, neighbor)
+                if potential_action == 1 and neighbor[0] > 1 and board[
+                        neighbor[0] - 1, neighbor[1]] == 0:
+                    self.blackboard.action = potential_action
+                    self.blackboard.recently_kicked_bomb = 0
+                    return py_trees.common.Status.SUCCESS
+                if potential_action == 2 and neighbor[0] < 10 and board[
+                        neighbor[0] + 1, neighbor[1]] == 0:
+                    self.blackboard.action = potential_action
+                    self.blackboard.recently_kicked_bomb = 0
+                    return py_trees.common.Status.SUCCESS
+                if potential_action == 3 and neighbor[1] > 1 and board[
+                        neighbor[0], neighbor[1] - 1] == 0:
+                    self.blackboard.action = potential_action
+                    self.blackboard.recently_kicked_bomb = 0
+                    return py_trees.common.Status.SUCCESS
+                if potential_action == 4 and neighbor[1] < 10 and board[
+                        neighbor[0], neighbor[1] + 1] == 0:
+                    self.blackboard.action = potential_action
+                    self.blackboard.recently_kicked_bomb = 0
+                    return py_trees.common.Status.SUCCESS
         return py_trees.common.Status.FAILURE
+
 
 class SafePlaceCheck(py_trees.behaviour.Behaviour):
     def __init__(self, name):
@@ -102,6 +128,7 @@ class SafePlaceCheck(py_trees.behaviour.Behaviour):
 
         # Not in safe place
         return py_trees.common.Status.FAILURE
+
 
 class FindAndGoToSafePlace(py_trees.behaviour.Behaviour):
     def __init__(self, name):

@@ -15,9 +15,10 @@ class PyTreeAgent(BaseAgent):
         self.tree.setup_with_descendants()
 
         self.tmp_counter = 0
+        self.blackboard.action = 0
+        self.blackboard.recently_kicked_bomb = 5
 
     def act(self, obs, action_space):
-
         """
         if self.tmp_counter < 1:
             self.tmp_counter += 1
@@ -25,7 +26,6 @@ class PyTreeAgent(BaseAgent):
             #return np.random.randint(0, 6)
     """
         self.blackboard.obs = obs
-        self.blackboard.action = 0
         self.tree.tick_once()
 
         #print("blackboard action: "+ str(self.blackboard.action))
@@ -45,7 +45,8 @@ class PyTreeAgent(BaseAgent):
 
         check_and_find_safe_place_root = py_trees.composites.Selector(
             name='Check and find safe place root')
-        kick_or_hide_root = py_trees.composites.Selector(name='Kick or hide root')
+        kick_or_hide_root = py_trees.composites.Selector(
+            name='Kick or hide root')
         kick_root = py_trees.composites.Sequence(name='Kick root')
         kick_check = KickCheck(name='Kick check')
         kick = Kick(name='Kick')
@@ -76,32 +77,32 @@ class PyTreeAgent(BaseAgent):
 
         place_bomb = PlaceBomb(name='place bomb')
 
-        wooden_wall_check = WoodenWallCheck(
-            name='Wooden wall check')
+        wooden_wall_check = WoodenWallCheck(name='Wooden wall check')
 
-        bomb_wooden_wall = BombWoodenWall(
-            name='Bomb wooden wall')
+        bomb_wooden_wall = BombWoodenWall(name='Bomb wooden wall')
 
-        explore_randomly = ExploreRandomly(
-            name='Explore randomly')
+        explore_randomly = ExploreRandomly(name='Explore randomly')
 
         # Build tree
         ## Bomb side
         safe_place_root.add_children(
             [safe_place_check])  #, wait_for_explosion])
-        kick_or_hide_root.add_children([kick_root,check_and_find_safe_place_root])
-        kick_root. add_children([kick_check,kick])
+        kick_or_hide_root.add_children(
+            [kick_root, check_and_find_safe_place_root])
+        kick_root.add_children([kick_check, kick])
         check_and_find_safe_place_root.add_children(
             [safe_place_root, find_and_go_to_safe_place])
-        bomb_nearby_root.add_children([
-            bomb_nearby_check, message_teammate, kick_or_hide_root
-        ])
+        bomb_nearby_root.add_children(
+            [bomb_nearby_check, message_teammate, kick_or_hide_root])
 
         ## Explore side
         enemy_close_by_root.add_children([enemy_close_by_check, place_bomb])
-        bomb_enemy_or_explore_map_root.add_children([enemy_close_by_root, explore_map_root])
-        explore_map_root.add_children([explore_wooden_wall_root, explore_randomly])
-        explore_wooden_wall_root.add_children([wooden_wall_check,bomb_wooden_wall])
+        bomb_enemy_or_explore_map_root.add_children(
+            [enemy_close_by_root, explore_map_root])
+        explore_map_root.add_children(
+            [explore_wooden_wall_root, explore_randomly])
+        explore_wooden_wall_root.add_children(
+            [wooden_wall_check, bomb_wooden_wall])
         power_up_root.add_children([power_up_check, take_power_up])
         explore_root.add_children(
             [power_up_root, bomb_enemy_or_explore_map_root])
