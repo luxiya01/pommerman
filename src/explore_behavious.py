@@ -260,7 +260,7 @@ class ExploreRandomly(py_trees.behaviour.Behaviour):
         pass
 
     def update(self):
-        print('Exploring randomly')
+        # print('Exploring randomly')
         position = self.blackboard.obs['position']
         board = self.blackboard.obs['board']
 
@@ -289,5 +289,5 @@ class ExploreRandomly(py_trees.behaviour.Behaviour):
             self.blackboard.action = np.random.choice(traversable_actions)
         else:
             self.blackboard.action = 0
-        print('Explore behavior: ', self.blackboard.action)
+        # print('Explore behavior: ', self.blackboard.action)
         return py_trees.common.Status.SUCCESS
