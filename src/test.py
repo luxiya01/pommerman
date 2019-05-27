@@ -36,6 +36,7 @@ def main():
             actions = env.act(state)
             state, reward, done, info = env.step(actions)
         print('Episode {} finished'.format(i_episode))
+        print(reward)
     env.close()
 
 

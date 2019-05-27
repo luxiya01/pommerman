@@ -14,10 +14,12 @@ def check_bomb_range(position, bomb_blast_strength):
     for i in nonzero_indices:
         row, col = i
         wall_in_between = False
+        #print('Position: ', position)
+        #print('Bomb position: ', i)
         # Bomb in the same row as the agent
         if position[0] == row:
             distance = abs(position[1] - col)
-
+            #print('same row')
             if distance <= bomb_blast_strength[row, col]:
 
                 max_position = max(position[1], col)
@@ -32,7 +34,7 @@ def check_bomb_range(position, bomb_blast_strength):
         if position[1] == col:
             distance = abs(position[0] - row)
             if distance <= bomb_blast_strength[row, col]:
-
+                #print('same col')
                 max_position = max(position[0], row)
                 min_position = min(position[0], row)
 
@@ -43,6 +45,7 @@ def check_bomb_range(position, bomb_blast_strength):
                 if shortest_distance > distance and not wall_in_between:
                     shortest_distance = distance
     if shortest_distance == float('inf'):
+        #print('range inf')
         return SUCCESS
     return shortest_distance
 
@@ -103,6 +106,9 @@ def calculate_score(board_index, enemy_nearby_threshold=2):
     if (board[i, j] == 1) or (board[i, j] == 3) or (board[i, j] == 4):
         return -1000
 
+    if is_our_friend_blocked_by_us(0, board_index):
+        return -1000
+
     if (board[i, j] == 2):
         return -100
 
@@ -111,6 +117,7 @@ def calculate_score(board_index, enemy_nearby_threshold=2):
 
     if board[i, j] == team_mate:
         return -50
+
 
     total_score = -7
 
@@ -180,6 +187,7 @@ def next_action(start_pos, next_pos):
     elif start_y - next_y == -1:
         # RIGHT!
         return 4
+    #print('Next action == 0')
     return 0
 
 
@@ -221,3 +229,43 @@ def astar(grid, start_pos, goal_pos):
                     frontier[neighbour] = priority
                 came_from[neighbour] = current_pos
     return get_astar_path_and_cost(start_pos, goal_pos, came_from, cost_so_far)
+
+def are_we_blocked(position):
+    blackboard = py_trees.blackboard.Blackboard()
+    board = blackboard.obs['board']
+    for neighbour in get_neighbour_indices(position):
+        board_cell = board[neighbour[0],neighbour[1]]
+        if 5 < board_cell < 9 or board_cell == 0:
+            return False
+
+    return True
+
+def is_our_friend_blocked_by_us( action, position):
+    blackboard = py_trees.blackboard.Blackboard()
+    board = blackboard.obs['board']
+    team_mate = blackboard.obs['teammate'].value
+    if (np.sum(board == team_mate)>0):
+        message = blackboard.obs['message']
+        if (message[0] == 1):
+            team_mate_position = np.argwhere(board == team_mate)[0]
+            team_mate_target = next_position(message[1], team_mate_position)
+
+            #print(team_mate_target)
+            if (position[0] == team_mate_target[0] and position[1] == team_mate_target[1]):
+                return True
+            our_next_position = next_position(action, position)
+            if (our_next_position[0] == team_mate_target[0] and our_next_position[1] == team_mate_target[1]):
+                return True
+    return False
+
+def next_position(action, position):
+    target_position = position
+    if action == 1:
+        target_position = position[0] - 1, position[1]
+    if action == 2:
+        target_position = position[0] + 1, position[1]
+    if action == 3:
+        target_position = position[0], position[1] - 1
+    if action == 4:
+        target_position = position[0], position[1] + 1
+    return target_position

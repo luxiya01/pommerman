@@ -5,6 +5,7 @@ from custom_behaviours import *
 from bomb_nearby_side_behaviours import *
 from explore_behavious import *
 import numpy as np
+from datetime import datetime
 
 
 class PyTreeAgent(BaseAgent):
@@ -17,6 +18,7 @@ class PyTreeAgent(BaseAgent):
         self.tmp_counter = 0
         self.blackboard.action = 0
         self.blackboard.recently_kicked_bomb = 5
+        self.blackboard.bomb_position = None
 
     def act(self, obs, action_space):
         """
@@ -25,12 +27,27 @@ class PyTreeAgent(BaseAgent):
             return 5
             #return np.random.randint(0, 6)
     """
+        before = datetime.now()
         self.blackboard.obs = obs
         self.tree.tick_once()
 
         #print("blackboard action: "+ str(self.blackboard.action))
 
-        return int(self.blackboard.action)
+        action = int(self.blackboard.action)
+
+        blocked = utils.are_we_blocked(obs['position'])
+
+        #print(action)
+
+        if blocked:
+            return action, 1, action
+
+        after = datetime.now()
+
+        millisecond = (after.second - before.second)*1000 + (after.microsecond - before.microsecond)/1000
+        if millisecond>=100:
+            print(millisecond)
+        return action
 
     def _create_tree(self):
         # Define nodes

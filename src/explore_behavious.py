@@ -56,6 +56,7 @@ class TakePowerUp(py_trees.behaviour.Behaviour):
             self.blackboard.action = 5
 
         elif board[best_next_step[0],best_next_step[1]]== 1:
+            #print('next step is a wall')
             return py_trees.common.Status.FAILURE
         else:
             self.blackboard.action = utils.next_action(position, best_next_step)
@@ -118,11 +119,14 @@ class PlaceBomb(py_trees.behaviour.Behaviour):
         # if wooden wall: bomb
         if board[best_next_step[0], best_next_step[1]] == 2 and self.blackboard.obs['ammo']>0:
             self.blackboard.action = 5
+            self.blackboard.bomb_position = position
+
         # if rigid wall: cannot do anything
         elif board[best_next_step[0], best_next_step[1]] == 1:
             return py_trees.common.Status.FAILURE
-        elif utils.calculate_manhattan(position, target_enemy)== 1:
+        elif utils.calculate_manhattan(position, target_enemy)<= 2:
             self.blackboard.action = 5
+            self.blackboard.bomb_position = position
         else:
             self.blackboard.action = utils.next_action(position, best_next_step)
 
@@ -181,6 +185,7 @@ class BombWoodenWall(py_trees.behaviour.Behaviour):
 
         if board[best_next_step[0],best_next_step[1]]== 2 and self.blackboard.obs['ammo'] > 0:
             self.blackboard.action = 5
+            self.blackboard.bomb_position = position
 
         elif board[best_next_step[0],best_next_step[1]]== 1:
             return py_trees.common.Status.FAILURE
@@ -202,7 +207,7 @@ class ExploreRandomly(py_trees.behaviour.Behaviour):
         pass
 
     def update(self):
-        # print(self.blackboard)
+        print('Exploring randomly')
         position = self.blackboard.obs['position']
         board = self.blackboard.obs['board']
         traversable_neighbors = []
