@@ -23,7 +23,9 @@ class BombNearByCheck(py_trees.behaviour.Behaviour):
         bomb_blast_strength[nonzero_indices] = 1
         #return utils.check_visibility(position, bomb_blast_strength)
 
-        if not utils.check_bomb_range(position, bomb_blast_strength) == utils.SUCCESS:
+        if not utils.check_bomb_range(position,
+                                      bomb_blast_strength) == utils.SUCCESS:
+            # print('Bomb nearby!')
             return py_trees.common.Status.SUCCESS
         return py_trees.common.Status.FAILURE
 
@@ -77,7 +79,7 @@ class Kick(py_trees.behaviour.Behaviour):
         neighbours = utils.get_neighbour_indices(position)
 
         for neighbor in neighbours:
-            if neighbor ==  self.blackboard.bomb_position:
+            if neighbor == self.blackboard.bomb_position:
                 self.blackboard.bomb_position = None
                 continue
             if board[neighbor[0], neighbor[1]] == 3:
@@ -126,11 +128,15 @@ class SafePlaceCheck(py_trees.behaviour.Behaviour):
         nonzero_indices = np.nonzero(flame_board)
         bomb_blast_strength[nonzero_indices] = 1
 
+        # print('In SafePlaceCheck')
+
         # Do nothing if we are in a safe place and there is a bomb around
-        if utils.check_bomb_range(position,
-                                  bomb_blast_strength) == utils.SUCCESS and not utils.is_our_friend_blocked_by_us(0,position):
+        if utils.check_bomb_range(
+                position, bomb_blast_strength
+        ) == utils.SUCCESS and not utils.is_our_friend_blocked_by_us(
+                0, position):
             self.blackboard.action = 0
-            #print('I am safe!')
+            # print('I am safe!')
             return py_trees.common.Status.SUCCESS
 
         # Not in safe place
@@ -167,8 +173,9 @@ class FindAndGoToSafePlace(py_trees.behaviour.Behaviour):
         #print('best_index: ',best_index)
         #print('length scores: ', scores.shape)
         #if best_index == 0:
-            #print('best index = 0')
+        #print('best index = 0')
         self.blackboard.action = best_index
+        # print('Go to safeplace: ', best_index)
         return py_trees.common.Status.SUCCESS
 
     def find_scores(self, position):
@@ -183,4 +190,25 @@ class FindAndGoToSafePlace(py_trees.behaviour.Behaviour):
         for i, board_index in enumerate(positions):
 
             scores[i] = utils.calculate_score(board_index)
+
+            total_neighbour_score = 0
+            """
+            already_encountered_start_pos = False
+            for neighbor in utils.get_neighbour_indices(board_index):
+                # Reaching end of the board
+                if neighbor[0] == board_index[0] and neighbor[
+                        1] == board_index[1]:
+                    if already_encountered_start_pos:
+                        neighbor_score = -1000 * 0.1
+                    else:
+                        already_encountered_start_pos = True
+                        neighbor_score = utils.calculate_score(neighbor)
+                # Free to roam
+                else:
+                    neighbor_score = utils.calculate_score(neighbor)
+                total_neighbour_score += neighbor_score * 0.01
+                """
+            scores[i] += total_neighbour_score
+        # print(scores)
+
         return scores, positions

@@ -92,11 +92,14 @@ def calculate_manhattan(candidate_position1, candidate_position2):
     return x_dist + y_dist
 
 
-def calculate_score(board_index, enemy_nearby_threshold=2):
+def calculate_score(board_index,
+                    enemy_nearby_threshold=2,
+                    bomb_blast_strength=None):
     blackboard = py_trees.blackboard.Blackboard()
     i, j = board_index
     board = blackboard.obs['board']
-    bomb_blast_strength = blackboard.obs['bomb_blast_strength']
+    if bomb_blast_strength is None:
+        bomb_blast_strength = blackboard.obs['bomb_blast_strength']
     enemies = (blackboard.obs['enemies'][0].value,
                blackboard.obs['enemies'][1].value)
     team_mate = blackboard.obs['teammate'].value
@@ -117,7 +120,6 @@ def calculate_score(board_index, enemy_nearby_threshold=2):
 
     if board[i, j] == team_mate:
         return -50
-
 
     total_score = -7
 
@@ -230,33 +232,38 @@ def astar(grid, start_pos, goal_pos):
                 came_from[neighbour] = current_pos
     return get_astar_path_and_cost(start_pos, goal_pos, came_from, cost_so_far)
 
+
 def are_we_blocked(position):
     blackboard = py_trees.blackboard.Blackboard()
     board = blackboard.obs['board']
     for neighbour in get_neighbour_indices(position):
-        board_cell = board[neighbour[0],neighbour[1]]
+        board_cell = board[neighbour[0], neighbour[1]]
         if 5 < board_cell < 9 or board_cell == 0:
             return False
 
     return True
 
-def is_our_friend_blocked_by_us( action, position):
+
+def is_our_friend_blocked_by_us(action, position):
     blackboard = py_trees.blackboard.Blackboard()
     board = blackboard.obs['board']
     team_mate = blackboard.obs['teammate'].value
-    if (np.sum(board == team_mate)>0):
+    if (np.sum(board == team_mate) > 0):
         message = blackboard.obs['message']
         if (message[0] == 1):
             team_mate_position = np.argwhere(board == team_mate)[0]
             team_mate_target = next_position(message[1], team_mate_position)
 
             #print(team_mate_target)
-            if (position[0] == team_mate_target[0] and position[1] == team_mate_target[1]):
+            if (position[0] == team_mate_target[0]
+                    and position[1] == team_mate_target[1]):
                 return True
             our_next_position = next_position(action, position)
-            if (our_next_position[0] == team_mate_target[0] and our_next_position[1] == team_mate_target[1]):
+            if (our_next_position[0] == team_mate_target[0]
+                    and our_next_position[1] == team_mate_target[1]):
                 return True
     return False
+
 
 def next_position(action, position):
     target_position = position

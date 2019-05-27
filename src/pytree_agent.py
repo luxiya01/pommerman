@@ -42,10 +42,16 @@ class PyTreeAgent(BaseAgent):
         if blocked:
             return action, 1, action
 
+        if utils.is_our_friend_blocked_by_us(action,
+                                             self.blackboard.obs['position']):
+            print('This action would block our friend!')
+            action = 0
+
         after = datetime.now()
 
-        millisecond = (after.second - before.second)*1000 + (after.microsecond - before.microsecond)/1000
-        if millisecond>=100:
+        millisecond = (after.second - before.second) * 1000 + (
+            after.microsecond - before.microsecond) / 1000
+        if millisecond >= 100:
             print(millisecond)
         return action
 
